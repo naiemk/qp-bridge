@@ -4,18 +4,18 @@ import { useState } from 'react'
 import { TokenEditor } from '@/components/web3/token-editor'
 import { TokenSelectorModal } from '@/components/web3/token-selector-modal'
 import { NetworkSelector } from '@/components/web3/network-selector'
-import { UnclaimedBalanceModal } from './unclaimed-balance-modal'
 import { GLOBAL_CONFIG } from '@/types/token'
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle } from 'lucide-react'
 import { ChainLabel } from '@/components/web3/chain-label'
-import { useConnectWalletSimple, getChain, ChainConstants, Token, ApprovableButton } from 'web3-react-ui'
+import { useConnectWalletSimple, getChain, ChainConstants, Token, ApprovableButton, useContracts, useErc20 } from 'web3-react-ui'
 import { NetworkSelectorModal } from '@/components/web3/network-selector-modal'
 import { TokenBalance } from '@/components/web3/token-balance'
 
 interface AppConfig {
-  'bridge-contracts': {
+  'supportedChains': string[]
+  'bridgeContracts': {
     [chainId: string]: string
   }
 }
@@ -34,12 +34,14 @@ export function TokenEditorSection() {
   const [selectedNetworkId, setSelectedNetworkId] = useState<string>('');
   const [onNetworkSelect, setOnNetworkSelect] = useState<{selector?: (networkId: string) => void}>({})
 
+  const { execute } = useContracts();
+  const { toMachineReadable, tokenData } = useErc20(selectedToken?.address || '', chainId || '');
   const [errorMessage, /*setErrorMessage*/] = useState<string | null>(null)
-  const [isUnclaimedBalanceModalOpen, setIsUnclaimedBalanceModalOpen] = useState(false)
   const chainIds = Object.keys(ChainConstants);
   const tokens = GLOBAL_CONFIG['TOKENS'] as Token[] || []; // This comes from the config file passed in layout...
   const appConfig = GLOBAL_CONFIG['APP'] as AppConfig || {};
-  const bridgeContractAddress = appConfig?.['bridge-contracts']?.[chainId || '-'] || null;
+  const bridgeContractAddress = appConfig?.['bridgeContracts']?.[chainId || '-'] || null;
+  const supportedChains = appConfig?.['supportedChains'] || [];
   console.log(bridgeContractAddress, 'bridgeContractAddress', appConfig)
 
   const handleNetowrkSelect = (networkId: string) => {
@@ -52,31 +54,22 @@ export function TokenEditorSection() {
     setIsTokenSelectorOpen(false)
   }
 
-  const handleSwap = () => {
-    // TODO: Implement swap functionality
-    console.log('Swap button clicked')
-  }
-
-  const handleClaim = () => {
-    // TODO: Implement claim functionality
-    console.log('Claim button clicked')
-    setIsUnclaimedBalanceModalOpen(false)
+  const handleSwap = async () => {
+    if (!tokenData || !bridgeContractAddress || !selectedToken) {
+      return;
+    }
+    const method = 'function swap(uint remoteChainId, address token, uint256 amount, uint256 nativeGas) payable'
+    const nativeGas = BigInt(5000000000000000); // Hardcoded native gas for now
+    const amountInWei = toMachineReadable(amount)!;
+    const tx = await execute(bridgeContractAddress!, method, [selectedNetworkId, selectedToken?.address, amountInWei, nativeGas], {
+        value: (nativeGas + (selectedToken!.isNative ? amountInWei : BigInt(0))) as any
+      }
+    );
+    console.log('tx', tx)
   }
 
   return (
     <div className="w-full max-w-md mx-auto space-y-4">
-      <Alert>
-        <AlertCircle className="h-4 w-4" />
-        <AlertDescription>
-          You have some unclaimed balance on the {getChain(chainId || '1')?.label}.{' '}
-          <button
-            onClick={() => setIsUnclaimedBalanceModalOpen(true)}
-            className="font-medium underline underline-offset-4"
-          >
-            See more
-          </button>
-        </AlertDescription>
-      </Alert>
 
       <div className="bg-card/50 dark:bg-card/10 backdrop-blur-sm rounded-xl p-4 shadow-xl border border-border space-y-4">
         {chainId ? <ChainLabel chainId={chainId!} label={`Connected to ${getChain(chainId!)?.label}`} /> :
@@ -88,6 +81,7 @@ export function TokenEditorSection() {
         <NetworkSelector
           selectedNetworkId={selectedNetworkId}
           label="To (Destination Network)"
+          disabled={!supportedChains.includes(chainId!)}
           onOpenModal={() => {
             const selector = (netId: string) => { setSelectedNetworkId(netId); setSelectedToken(null)}
             console.log('selector', selector)
@@ -158,17 +152,6 @@ export function TokenEditorSection() {
         onClose={() => setIsNetowrkSelectorOpen(false)}
         onSelect={handleNetowrkSelect}
         networkIds={(chainIds || []).filter(id => id !== selectedNetworkId)}
-      />
-
-      <UnclaimedBalanceModal
-        isOpen={isUnclaimedBalanceModalOpen}
-        onClose={() => setIsUnclaimedBalanceModalOpen(false)}
-        chainId={chainId!}
-        unclaimedBalance={{
-          amount: '200',
-          token: 'USDT'
-        }}
-        onClaim={handleClaim}
       />
     </div>
   )

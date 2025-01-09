@@ -37,10 +37,10 @@ export default function RootLayout({
             icon: "https://ferrum.network/wp-content/uploads/2022/07/cropped-ferrum-favicon-1-32x32.png",
             description: "Demp Bridge",
           })}
-          providersConfigUrl="https://raw.githubusercontent.com/naiemk/web3-react-ui-template/refs/heads/main/resources/configs/network-list.json"
+          providersConfigUrl="https://raw.githubusercontent.com/naiemk/qp-bridge/refs/heads/main/resources/configs/network-list.json"
           configUrlMaps={{
-            "TOKENS": "https://raw.githubusercontent.com/naiemk/web3-react-ui-template/refs/heads/main/resources/configs/tokens.json",
-            "APP": "https://raw.githubusercontent.com/naiemk/web3-react-ui-template/refs/heads/main/src/components/example/example-config.json"
+            "TOKENS": "https://raw.githubusercontent.com/naiemk/qp-bridge/refs/heads/main/resources/configs/tokens.json",
+            "APP": "https://raw.githubusercontent.com/naiemk/qp-bridge/refs/heads/main/resources/configs/config.json"
           }}
           onError={(error) => setError(error)}
           onConfigLoaded={(k, v) => {

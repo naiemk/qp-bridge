@@ -8,15 +8,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { X } from 'lucide-react'
-import { getChain } from 'web3-react-ui'
+import { useEffect, useState } from "react"
+import { getChain, useContracts, useErc20 } from 'web3-react-ui'
 
 interface UnclaimedBalanceModalProps {
   isOpen: boolean
   onClose: () => void
   chainId: string
   unclaimedBalance: {
-    amount: string
-    token: string
+    amount: string | null
+    token: string | null
   }
   onClaim: () => void
 }
@@ -28,6 +29,19 @@ export function UnclaimedBalanceModal({
   unclaimedBalance,
   onClaim
 }: UnclaimedBalanceModalProps) {
+  const { tokenData, toHumanReadable } = useErc20(unclaimedBalance.token || '', chainId)
+  const [amount, setAmount] = useState<string | null>(null)
+  const [token, setToken] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (tokenData) {
+      const amount = toHumanReadable(unclaimedBalance.amount || '0');
+      const token = tokenData.symbol;
+      setAmount(amount);
+      setToken(token);
+    }
+  }, [tokenData, unclaimedBalance.amount])
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px] dark:border-gray-700">
@@ -46,9 +60,9 @@ export function UnclaimedBalanceModal({
             You have unclaimed balance on the {getChain(chainId)?.label}:
           </p>
           <p className="text-2xl font-bold mb-6 text-foreground">
-            {unclaimedBalance.amount} {unclaimedBalance.token}
+            {amount} {token}
           </p>
-          <Button onClick={onClaim} className="w-full">
+          <Button onClick={onClaim} className="w-full" disabled={!amount || !token}>
             Claim
           </Button>
         </div>

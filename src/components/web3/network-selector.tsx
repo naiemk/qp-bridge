@@ -9,13 +9,15 @@ import Image from 'next/image'
 interface NetworkSelectorProps {
   selectedNetworkId: string
   onOpenModal: () => void
-  label?: string
+  label?: string,
+  disabled?: boolean
 }
 
 export function NetworkSelector({
   selectedNetworkId,
   onOpenModal,
-  label
+  label,
+  disabled
 }: NetworkSelectorProps) {
   const selectedNetwork = getChain(selectedNetworkId)
 
@@ -25,6 +27,7 @@ export function NetworkSelector({
         {label}
       </label>
       <Button
+        disabled={disabled}
         variant="outline"
         role="combobox"
         aria-expanded={false}
