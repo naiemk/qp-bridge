@@ -72,7 +72,7 @@
   {
     "namespace": "evm",
     "id": "26100",
-    "rpcUrl": "https://rpc.svcs.ferrumnetwork.io",
+    "rpcUrl": "https://qpn.svcs.ferrumnetwork.io",
     "label": "Ferrum Network",
     "token": "FERRUM",
     "icon": "https://ferrum.network/wp-content/uploads/2022/07/cropped-ferrum-favicon-1-32x32.png",
