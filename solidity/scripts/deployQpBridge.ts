@@ -1,3 +1,4 @@
+import hre from "hardhat";
 import { ethers } from "hardhat";
 import { QpBridge, } from "../typechain-types";
 
@@ -15,10 +16,10 @@ interface Dependencies {
 }
 
 const DEPENDENCIES_ARBITRUM: Dependencies = {
-  bridge: "",
-  portal: "",
+  bridge: "0x795e880127f7e040389c0c9c07c81c484884e3b1",
+  portal: "0xa45baceeb0c6b072b17ef6483e4fb50a49dc5f4b",
   remotePeers: {
-    "26100": "",
+    "26100": "0x795e880127f7e040389c0c9c07c81c484884e3b1",
   },
   remotePairs: {
     "26100": {
@@ -28,10 +29,10 @@ const DEPENDENCIES_ARBITRUM: Dependencies = {
 }
 
 const DEPENDENCIES_FERRUM: Dependencies = {
-  bridge: "",
-  portal: "",
+  bridge: "0x795e880127f7e040389c0c9c07c81c484884e3b1",
+  portal: "0xa45baceeb0c6b072b17ef6483e4fb50a49dc5f4b",
   remotePeers: {
-    "42161": "",
+    "42161": "0x795e880127f7e040389c0c9c07c81c484884e3b1",
   },
   remotePairs: {
     "42161": {
@@ -49,7 +50,10 @@ const panick = (msg: string) => { throw new Error(msg) }
 
 async function main() {
   // deploy qp bridge
-  const owner = process.env.OWNER ?? panick("OWNER is not set");
+  const deployer = (await hre.ethers.getSigners())[0];
+  const owner = process.env.OWNER || deployer.address;
+  console.log("Deployer:", deployer.address);
+
   const currentChainId = (await ethers.provider.getNetwork().then(network => network.chainId)).toString();
   console.log("Current chain id:", currentChainId);
   console.log("Owner:", owner);
@@ -72,8 +76,10 @@ async function main() {
   await qpBridge.updatePortal(config.portal);
 
   console.log('Update tokens')
-  for (const chainId in Object.keys(config.remotePairs)) {
-    for (const token in Object.keys(config.remotePairs[chainId])) {
+  for (const chainId of Object.keys(config.remotePairs)) {
+    console.log(`Updating tokens for chain ${chainId}`);
+    for (const token of Object.keys(config.remotePairs[chainId])) {
+      console.log(`Updating token ${token} for chain ${chainId}`);
       await qpBridge.updateRemotePair(chainId, token, config.remotePairs[chainId][token]);
     }
   }
