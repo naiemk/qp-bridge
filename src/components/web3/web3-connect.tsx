@@ -39,7 +39,7 @@ function ConnectWalletButton() {
         {connecting ? (
           'Connecting...'
         ) : wallet ? (
-          shortenAddress(wallet.accounts[0].address)
+          shortenAddress(wallet?.accounts?.[0]?.address || '')
         ) : (
           'Connect'
         )}
@@ -49,8 +49,8 @@ function ConnectWalletButton() {
         <WalletModal
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
-          address={wallet.accounts[0].address}
-          chainId={parseInt(wallet.chains[0].id, 16).toString()}
+          address={wallet.accounts?.[0]?.address}
+          chainId={parseInt(wallet.chains?.[0]?.id || '0', 16).toString()}
           onDisconnect={handleDisconnect}
         />
       )}

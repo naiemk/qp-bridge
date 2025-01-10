@@ -19,7 +19,7 @@ if (accounts?.mnemonic) {
 }
 
 const config: HardhatUserConfig = {
-  solidity: "0.8.28",
+  solidity: "0.8.24",
   networks: {
     arbitrumOne: {
       chainId: 42161,

@@ -59,10 +59,11 @@ export function TokenEditorSection() {
       return;
     }
     const method = 'function swap(uint remoteChainId, address token, uint256 amount, uint256 nativeGas) payable'
-    const nativeGas = BigInt(5000000000000000); // Hardcoded native gas for now
+    const nativeGas = chainId == '26100' ? BigInt(50000000000000000) : BigInt(5000000000000); // Hardcoded native gas for now
     const amountInWei = toMachineReadable(amount)!;
     const tx = await execute(bridgeContractAddress!, method, [selectedNetworkId, selectedToken?.address, amountInWei, nativeGas], {
-        value: (nativeGas + (selectedToken!.isNative ? amountInWei : BigInt(0))) as any
+        value: (nativeGas + (selectedToken!.isNative ? amountInWei : BigInt(0))) as any,
+        gasLimit: 5000000
       }
     );
     console.log('tx', tx)
@@ -144,14 +145,14 @@ export function TokenEditorSection() {
         onClose={() => setIsTokenSelectorOpen(false)}
         onSelect={handleTokenSelect}
         selectedToken={selectedToken}
-        tokens={tokens.filter(token => token.chainId == selectedNetworkId)}
+        tokens={tokens.filter(token => token.chainId == chainId)}
       />
 
       <NetworkSelectorModal
         isOpen={isNetworkSelectorOpen}
         onClose={() => setIsNetowrkSelectorOpen(false)}
         onSelect={handleNetowrkSelect}
-        networkIds={(chainIds || []).filter(id => id !== selectedNetworkId)}
+        networkIds={(chainIds || []).filter(id => id !== selectedNetworkId && id != chainId && supportedChains.includes(id))}
       />
     </div>
   )

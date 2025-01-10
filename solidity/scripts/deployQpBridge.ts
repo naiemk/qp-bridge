@@ -19,7 +19,7 @@ const DEPENDENCIES_ARBITRUM: Dependencies = {
   bridge: "0x795e880127f7e040389c0c9c07c81c484884e3b1",
   portal: "0xa45baceeb0c6b072b17ef6483e4fb50a49dc5f4b",
   remotePeers: {
-    "26100": "0x795e880127f7e040389c0c9c07c81c484884e3b1",
+    "26100": "0xCB5C2bf299981207928404D42E03044b8ae0CEfe",
   },
   remotePairs: {
     "26100": {
@@ -29,7 +29,7 @@ const DEPENDENCIES_ARBITRUM: Dependencies = {
 }
 
 const DEPENDENCIES_FERRUM: Dependencies = {
-  bridge: "0x795e880127f7e040389c0c9c07c81c484884e3b1",
+  bridge: "0xCB5C2bf299981207928404D42E03044b8ae0CEfe",
   portal: "0xa45baceeb0c6b072b17ef6483e4fb50a49dc5f4b",
   remotePeers: {
     "42161": "0x795e880127f7e040389c0c9c07c81c484884e3b1",
@@ -73,16 +73,16 @@ async function main() {
   }
   await qpBridge.updateRemotePeers(
     remoteChainIds.map(Number), remotePeers);
-  await qpBridge.updatePortal(config.portal);
+  // await qpBridge.updatePortal(config.portal);
 
-  console.log('Update tokens')
-  for (const chainId of Object.keys(config.remotePairs)) {
-    console.log(`Updating tokens for chain ${chainId}`);
-    for (const token of Object.keys(config.remotePairs[chainId])) {
-      console.log(`Updating token ${token} for chain ${chainId}`);
-      await qpBridge.updateRemotePair(chainId, token, config.remotePairs[chainId][token]);
-    }
-  }
+  // console.log('Update tokens')
+  // for (const chainId of Object.keys(config.remotePairs)) {
+  //   console.log(`Updating tokens for chain ${chainId}`);
+  //   for (const token of Object.keys(config.remotePairs[chainId])) {
+  //     console.log(`Updating token ${token} for chain ${chainId}`);
+  //     await qpBridge.updateRemotePair(chainId, token, config.remotePairs[chainId][token]);
+  //   }
+  // }
 }
 
 main().catch(error => {
