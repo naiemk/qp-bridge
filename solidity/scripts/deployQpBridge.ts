@@ -64,6 +64,15 @@ async function main() {
   const qpBridge = config.bridge ? factory.attach(config.bridge) as QpBridge : await factory.deploy(owner) as QpBridge;
   console.log("QpBridge is at:", qpBridge.target);
 
+  console.log('Calling swap...')
+  const tx = await qpBridge.swap(42161, "0x0000000000000000000000000000000000000001",
+   "1000000000000000000", "5880000000000000", {value: 5880000000000000n + 1000000000000000000n});
+  console.log('Tx:', tx);
+  await tx.wait();
+  console.log('Swapped');
+
+  return
+
   console.log('Updating dependencies...')
   const remoteChainIds = Object.keys(config.remotePeers);
   const remotePeers = Object.values(config.remotePeers);
@@ -71,9 +80,10 @@ async function main() {
   if (missingIdx !== -1) {
     panick(`Missing peer for chain id ${remoteChainIds[missingIdx]}`);
   }
-  await qpBridge.updateRemotePeers(
-    remoteChainIds.map(Number), remotePeers);
-  // await qpBridge.updatePortal(config.portal);
+  // await qpBridge.updateRemotePeers(
+  //   remoteChainIds.map(Number), remotePeers);
+  console.log('Updating portal...')
+  await qpBridge.updatePortal(config.portal);
 
   // console.log('Update tokens')
   // for (const chainId of Object.keys(config.remotePairs)) {

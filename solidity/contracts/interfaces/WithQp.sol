@@ -1,14 +1,19 @@
 // SPDX-License-Identifier: MIT
 import "./IQuantumPortalPoc.sol";
-import "foundry-contracts/contracts/contracts/common/WithAdmin.sol";
+// import "foundry-contracts/contracts/contracts/common/WithAdmin.sol";
 
 pragma solidity ^0.8.0;
 
 /**
  * @notice Inherit this contract to acces basic QP behaviours
  */
-abstract contract WithQp is WithAdmin {
+abstract contract WithQp /* is WithAdmin */ {
     IQuantumPortalPoc public portal;
+
+    modifier onlyOwner() {
+        // require(msg.sender == owner, "Only owner can call this function");
+        _;
+    }
 
     /**
      * @notice Upddates the qp portal

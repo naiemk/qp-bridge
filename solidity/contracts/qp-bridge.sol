@@ -2,11 +2,15 @@
 pragma solidity ^0.8.0;
 import "./interfaces/WithQp.sol";
 import "./interfaces/WithRemotePeers.sol";
-import "foundry-contracts/contracts/contracts/common/SafeAmount.sol";
+// import "foundry-contracts/contracts/contracts/common/SafeAmount.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "hardhat/console.sol";
+
+interface IWETH {
+    function deposit() external payable;
+}
 
 contract QpBridge is ReentrancyGuard, WithQp, WithRemotePeers {
     using SafeERC20 for IERC20;
@@ -23,8 +27,13 @@ contract QpBridge is ReentrancyGuard, WithQp, WithRemotePeers {
         address recipient;
     }
 
+    modifier onlyAdmin() {
+        // require(msg.sender == admin, "Only admin can call this function");
+        _;
+    }
+
     constructor(address admin) 
-        Ownable(admin)
+        // Ownable(admin)
     {}
 
     receive() external payable {}
@@ -90,7 +99,9 @@ contract QpBridge is ReentrancyGuard, WithQp, WithRemotePeers {
             amount,
             recipient
         );
+        console.logBytes(encodedCall);
         portal.runNativeFee{value: nativeGas}(uint64(remoteChainId), remotePeers[remoteChainId], address(this), encodedCall);
+        console.log("Swapped");
     }
 
     function remoteSwap(uint key, address token, uint256 amount, address recipient) external {
@@ -107,7 +118,7 @@ contract QpBridge is ReentrancyGuard, WithQp, WithRemotePeers {
             console.log("liquidity", liquidity);
             if (liquidity >= amount) {
                 emit SwapProcessed(key, sourceNetwork, token, amount, recipient);
-                SafeAmount.safeTransferETH(recipient, amount);
+                // SafeAmount.safeTransferETH(recipient, amount);
                 return;
             }
         } else {
@@ -144,7 +155,7 @@ contract QpBridge is ReentrancyGuard, WithQp, WithRemotePeers {
     }
 
     function sweepNativeTokens(address recipient) external onlyOwner {
-        SafeAmount.safeTransferETH(recipient, address(this).balance);
+        // SafeAmount.safeTransferETH(recipient, address(this).balance);
     }
 
     function _withdrawLastPendingSwap(address user) internal {
@@ -152,7 +163,7 @@ contract QpBridge is ReentrancyGuard, WithQp, WithRemotePeers {
         pendingSwaps[user].pop();
         emit PendingSwapWithdrawn(pswap.token, pswap.amount, user);
         if (pswap.token == NATIVE_TOKEN) {
-            SafeAmount.safeTransferETH(user, pswap.amount);
+            // SafeAmount.safeTransferETH(user, pswap.amount);
         } else {
             IERC20(pswap.token).safeTransfer(user, pswap.amount);
         }
