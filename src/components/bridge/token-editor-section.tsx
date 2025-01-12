@@ -39,9 +39,9 @@ export function TokenEditorSection() {
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false)
   const [transactionId, setTransactionId] = useState<string | null>(null)
 
-  const { execute } = useContracts();
+  const { execute, error } = useContracts();
   const { toMachineReadable, tokenData } = useErc20(selectedToken?.address || '', chainId || '');
-  const [errorMessage, /*setErrorMessage*/] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
   const chainIds = Object.keys(ChainConstants);
   const tokens = GLOBAL_CONFIG['TOKENS'] as Token[] || []; // This comes from the config file passed in layout...
@@ -61,6 +61,12 @@ export function TokenEditorSection() {
   }
 
   useEffect(() => {
+    if (error) {
+      setErrorMessage(error)
+    }
+  }, [error])
+
+  useEffect(() => {
     if (!!chainId && !!selectedNetworkId && chainId === selectedNetworkId) {
       console.log('chainId === selectedNetworkId', chainId, selectedNetworkId)
       setSelectedNetworkId('')
@@ -73,18 +79,26 @@ export function TokenEditorSection() {
       return;
     }
     setPending(true)
-    const method = 'function swap(uint remoteChainId, address token, uint256 amount, uint256 nativeGas) payable'
-    const nativeGas = chainId == '26100' ? BigInt(50000000000000000) : BigInt(100000000000000); // Hardcoded native gas for now
-    const amountInWei = toMachineReadable(amount)!;
-    const tx = await execute(bridgeContractAddress!, method, [selectedNetworkId, selectedToken?.address, amountInWei, nativeGas], {
-        value: nativeGas + (selectedToken!.isNative ? amountInWei : BigInt(0)),
-        gasLimit: 5000000
+    try {
+      const method = 'function swap(uint remoteChainId, address token, uint256 amount, uint256 nativeGas) payable'
+      const nativeGas = chainId == '26100' ? BigInt(50000000000000000) : BigInt(100000000000000); // Hardcoded native gas for now
+      const amountInWei = toMachineReadable(amount)!;
+      const tx = await execute(bridgeContractAddress!, method, [selectedNetworkId, selectedToken?.address, amountInWei, nativeGas], {
+          value: nativeGas + (selectedToken!.isNative ? amountInWei : BigInt(0)),
+          gasLimit: 5000000
+        }
+      );
+      console.log('tx', tx)
+      if (tx && tx.hash) {
+        setTransactionId(tx.hash)
+        setIsTransactionModalOpen(true)
+        setErrorMessage(null)
       }
-    );
-    console.log('tx', tx)
-    setTransactionId(tx.hash)
-    setIsTransactionModalOpen(true)
-    setPending(false)
+    } catch (e) {
+      setErrorMessage((e as Error).message);
+    } finally {
+      setPending(false)
+    }
   }
 
   return (
