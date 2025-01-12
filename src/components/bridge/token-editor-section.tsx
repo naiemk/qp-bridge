@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { TokenEditor } from '@/components/web3/token-editor'
 import { TokenSelectorModal } from '@/components/web3/token-selector-modal'
 import { NetworkSelector } from '@/components/web3/network-selector'
@@ -12,6 +12,7 @@ import { ChainLabel } from '@/components/web3/chain-label'
 import { useConnectWalletSimple, getChain, ChainConstants, Token, ApprovableButton, useContracts, useErc20 } from 'web3-react-ui'
 import { NetworkSelectorModal } from '@/components/web3/network-selector-modal'
 import { TokenBalance } from '@/components/web3/token-balance'
+import { TransactionModal } from '../web3/transaction-modal'
 
 interface AppConfig {
   'supportedChains': string[]
@@ -34,9 +35,14 @@ export function TokenEditorSection() {
   const [selectedNetworkId, setSelectedNetworkId] = useState<string>('');
   const [onNetworkSelect, setOnNetworkSelect] = useState<{selector?: (networkId: string) => void}>({})
 
+  // Transaction modal
+  const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false)
+  const [transactionId, setTransactionId] = useState<string | null>(null)
+
   const { execute } = useContracts();
   const { toMachineReadable, tokenData } = useErc20(selectedToken?.address || '', chainId || '');
   const [errorMessage, /*setErrorMessage*/] = useState<string | null>(null)
+  const [pending, setPending] = useState(false)
   const chainIds = Object.keys(ChainConstants);
   const tokens = GLOBAL_CONFIG['TOKENS'] as Token[] || []; // This comes from the config file passed in layout...
   const appConfig = GLOBAL_CONFIG['APP'] as AppConfig || {};
@@ -54,12 +60,21 @@ export function TokenEditorSection() {
     setIsTokenSelectorOpen(false)
   }
 
+  useEffect(() => {
+    if (!!chainId && !!selectedNetworkId && chainId === selectedNetworkId) {
+      console.log('chainId === selectedNetworkId', chainId, selectedNetworkId)
+      setSelectedNetworkId('')
+      setSelectedToken(null)
+    }
+  }, [selectedNetworkId, chainId])
+
   const handleSwap = async () => {
     if (!tokenData || !bridgeContractAddress || !selectedToken) {
       return;
     }
+    setPending(true)
     const method = 'function swap(uint remoteChainId, address token, uint256 amount, uint256 nativeGas) payable'
-    const nativeGas = chainId == '26100' ? BigInt(50000000000000000) : BigInt(5000000000000); // Hardcoded native gas for now
+    const nativeGas = chainId == '26100' ? BigInt(50000000000000000) : BigInt(100000000000000); // Hardcoded native gas for now
     const amountInWei = toMachineReadable(amount)!;
     const tx = await execute(bridgeContractAddress!, method, [selectedNetworkId, selectedToken?.address, amountInWei, nativeGas], {
         value: (nativeGas + (selectedToken!.isNative ? amountInWei : BigInt(0))) as any,
@@ -67,6 +82,9 @@ export function TokenEditorSection() {
       }
     );
     console.log('tx', tx)
+    setTransactionId(tx.hash)
+    setIsTransactionModalOpen(true)
+    setPending(false)
   }
 
   return (
@@ -128,8 +146,9 @@ export function TokenEditorSection() {
                 <Button 
                   className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                   onClick={handleSwap}
+                  disabled={pending}
                 >
-                  Swap
+                  Swap {pending ? '...' : ''}
                 </Button>}
           unknownState={ <Button 
                   className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
@@ -153,6 +172,13 @@ export function TokenEditorSection() {
         onClose={() => setIsNetowrkSelectorOpen(false)}
         onSelect={handleNetowrkSelect}
         networkIds={(chainIds || []).filter(id => id !== selectedNetworkId && id != chainId && supportedChains.includes(id))}
+      />
+
+      <TransactionModal
+        isOpen={isTransactionModalOpen}
+        onClose={() => setIsTransactionModalOpen(false)}
+        transactionId={transactionId!}
+        chainId={chainId!}
       />
     </div>
   )
