@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/dialog"
 import { X } from 'lucide-react'
 import { useEffect, useState } from "react"
-import { getChain, useContracts, useErc20 } from 'web3-react-ui'
+import { getChain, useErc20 } from 'web3-react-ui'
 
 interface UnclaimedBalanceModalProps {
   isOpen: boolean
@@ -17,7 +17,7 @@ interface UnclaimedBalanceModalProps {
   chainId: string
   unclaimedBalance: {
     amount: string | null
-    token: string | null
+    tokenAddress: string | null
   }
   onClaim: () => void
 }
@@ -29,7 +29,7 @@ export function UnclaimedBalanceModal({
   unclaimedBalance,
   onClaim
 }: UnclaimedBalanceModalProps) {
-  const { tokenData, toHumanReadable } = useErc20(unclaimedBalance.token || '', chainId)
+  const { tokenData, toHumanReadable } = useErc20(unclaimedBalance.tokenAddress || '', chainId)
   const [amount, setAmount] = useState<string | null>(null)
   const [token, setToken] = useState<string | null>(null)
 
@@ -40,7 +40,7 @@ export function UnclaimedBalanceModal({
       setAmount(amount);
       setToken(token);
     }
-  }, [tokenData, unclaimedBalance.amount])
+  }, [tokenData, unclaimedBalance.amount, toHumanReadable])
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>

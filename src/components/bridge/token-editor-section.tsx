@@ -77,7 +77,7 @@ export function TokenEditorSection() {
     const nativeGas = chainId == '26100' ? BigInt(50000000000000000) : BigInt(100000000000000); // Hardcoded native gas for now
     const amountInWei = toMachineReadable(amount)!;
     const tx = await execute(bridgeContractAddress!, method, [selectedNetworkId, selectedToken?.address, amountInWei, nativeGas], {
-        value: (nativeGas + (selectedToken!.isNative ? amountInWei : BigInt(0))) as any,
+        value: nativeGas + (selectedToken!.isNative ? amountInWei : BigInt(0)),
         gasLimit: 5000000
       }
     );

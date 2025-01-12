@@ -7,9 +7,9 @@ import { UnclaimedBalanceModal } from "./unclaimed-balance-modal";
 export function UnclaimedBalance({contractAddress}: {contractAddress: string}) {
   const { address, chainId} = useConnectWalletSimple();
   const [isUnclaimedBalanceModalOpen, setIsUnclaimedBalanceModalOpen] = useState(false)
-  const [unclaimedBalance, setUnclaimedBalance] = useState({
+  const [unclaimedBalance, setUnclaimedBalance] = useState<{amount: string, tokenAddress: string | null}>({
     amount: '',
-    token: null
+    tokenAddress: null
   })
   const { callMethod, execute } = useContracts();
 
@@ -21,7 +21,7 @@ export function UnclaimedBalance({contractAddress}: {contractAddress: string}) {
         if (!balanceLen || balanceLen == BigInt(0)) {
           setUnclaimedBalance({
             amount: '0',
-            token: null
+            tokenAddress: null
           })
           return;
         }
@@ -33,7 +33,7 @@ export function UnclaimedBalance({contractAddress}: {contractAddress: string}) {
             tokenAddress: topBalance[0].toString(),
             amount: topBalance[1].toString(),
           }
-          setUnclaimedBalance(balance as any)
+          setUnclaimedBalance(balance)
         }
       }
     }

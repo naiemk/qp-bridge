@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { ERC20_ABI, Token, useContracts, useErc20 } from "web3-react-ui";
-import { ethers } from "ethers";
+import { Token, useContracts, useErc20 } from "web3-react-ui";
+
 export const TokenBalance = ({token, userAddress}: {token: Token, userAddress: string}) => {
   const { toHumanReadable, tokenData, getBalance } = useErc20(token.address, token.chainId);
   const [balance, setBalance] = useState<string | null>(null);
@@ -20,7 +20,7 @@ export const TokenBalance = ({token, userAddress}: {token: Token, userAddress: s
       }
       _getBalance()
     }
-  }, [tokenData, userAddress, token, callMethod, toHumanReadable]);
+  }, [tokenData, userAddress, token, callMethod, toHumanReadable, getBalance]);
 
   return (
     <div className="text-sm text-muted-foreground px-2">

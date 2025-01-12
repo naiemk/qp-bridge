@@ -1,8 +1,7 @@
 'use client'
 
 import { Dialog, DialogContent } from "@/components/ui/dialog"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
+import { Tabs, TabsContent } from "@/components/ui/tabs"
 import { ExternalLink } from 'lucide-react'
 import { AddressBox } from './address-box'
 import { getChain, Utils } from 'web3-react-ui'

@@ -1,7 +1,5 @@
 import { Layout } from '@/components/bridge/layout'
 import { TokenEditorSection } from '@/components/bridge/token-editor-section'
-import frmLogo from '@/img/ferrum-network-logo.png'
-import Image from 'next/image'
 
 export default function Home() {
   return (
