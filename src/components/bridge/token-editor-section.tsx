@@ -9,10 +9,12 @@ import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle } from 'lucide-react'
 import { ChainLabel } from '@/components/web3/chain-label'
-import { useConnectWalletSimple, getChain, ChainConstants, Token, ApprovableButton, useContracts, useErc20 } from 'web3-react-ui'
+import { useConnectWalletSimple, getChain, ChainConstants, Token, ApprovableButton, useContracts, useErc20, NATIVE_TOKEN_ADDRESS } from 'web3-react-ui'
 import { NetworkSelectorModal } from '@/components/web3/network-selector-modal'
-import { TokenBalance } from '@/components/web3/token-balance'
+import { findNativeToken, TokenBalances } from '@/components/web3/token-balance'
 import { TransactionModal } from '../web3/transaction-modal'
+import { ethers, TransactionReceipt } from 'ethers'
+import { UnclaimedBalance } from './unclaimed-balance'
 
 interface AppConfig {
   'supportedChains': string[]
@@ -39,6 +41,10 @@ export function TokenEditorSection() {
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false)
   const [transactionId, setTransactionId] = useState<string | null>(null)
 
+  // Gas check
+  const [nativeFee, setNativeFee] = useState(0n)
+  const [balances, setBalances] = useState<{[token: string]: bigint}>({})
+
   const { execute, error } = useContracts();
   const { toMachineReadable, tokenData } = useErc20(selectedToken?.address || '', chainId || '');
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -48,7 +54,6 @@ export function TokenEditorSection() {
   const appConfig = GLOBAL_CONFIG['APP'] as AppConfig || {};
   const bridgeContractAddress = appConfig?.['bridgeContracts']?.[chainId || '-'] || null;
   const supportedChains = appConfig?.['supportedChains'] || [];
-  console.log(bridgeContractAddress, 'bridgeContractAddress', appConfig)
 
   const handleNetowrkSelect = (networkId: string) => {
     onNetworkSelect.selector?.(networkId)
@@ -60,9 +65,27 @@ export function TokenEditorSection() {
     setIsTokenSelectorOpen(false)
   }
 
+  // Clear errors when data changes
+  useEffect(() => {
+    if (amount && selectedToken && selectedNetworkId) {
+      setErrorMessage(null)
+    }
+  }, [amount, selectedToken, selectedNetworkId])
+
+  useEffect(() => {
+    if (chainId) {
+      const nativeGas = chainId == '26100' ? BigInt(50000000000000000) : BigInt(100000000000000); // Hardcoded native gas for now
+      setNativeFee(nativeGas)
+    }
+  }, [chainId])
+
   useEffect(() => {
     if (error) {
-      setErrorMessage(error)
+      if (typeof error === 'string' && error.includes('ethers-user-denied')) {
+        setErrorMessage('User denied transaction')
+      } else {
+        setErrorMessage(error)
+      }
     }
   }, [error])
 
@@ -74,6 +97,13 @@ export function TokenEditorSection() {
     }
   }, [selectedNetworkId, chainId])
 
+  const handleTransactionSubmitted = (tx: TransactionReceipt) => {
+    if (tx && tx.hash) {
+      setTransactionId(tx.hash)
+      setIsTransactionModalOpen(true)
+    }
+  }
+
   const handleSwap = async () => {
     if (!tokenData || !bridgeContractAddress || !selectedToken) {
       return;
@@ -81,13 +111,29 @@ export function TokenEditorSection() {
     setPending(true)
     try {
       const method = 'function swap(uint remoteChainId, address token, uint256 amount, uint256 nativeGas) payable'
-      const nativeGas = chainId == '26100' ? BigInt(50000000000000000) : BigInt(100000000000000); // Hardcoded native gas for now
       const amountInWei = toMachineReadable(amount)!;
-      const tx = await execute(bridgeContractAddress!, method, [selectedNetworkId, selectedToken?.address, amountInWei, nativeGas], {
-          value: nativeGas + (selectedToken!.isNative ? amountInWei : BigInt(0)),
+      const totalNative = nativeFee + (selectedToken!.isNative ? amountInWei : 0n)
+      const nonNative = selectedToken!.isNative ? 0n : amountInWei
+      if (nonNative > balances[selectedToken!.address]) {
+        throw new Error(`Insufficient balance for ${selectedToken!.symbol}`)
+      }
+      if (totalNative > balances[NATIVE_TOKEN_ADDRESS]) {
+        throw new Error(`Insufficient balance for ${getChain(chainId!)?.token}`)
+      }
+      // Handle FRM special case. Ensure value is greater than one if we are bridging FRM to FRM
+      console.log('selectedNetworkId', selectedNetworkId, 'selectedToken', selectedToken)
+      if (selectedNetworkId == '26100' && selectedToken?.symbol == 'FRM') {
+        if (amountInWei < ethers.parseEther('1')) {
+          throw new Error(`FRM amount must be greater than 1`)
+        }
+      }
+      console.log('totalNative', totalNative, 'nativeFee', nativeFee, 'amountInWei', amountInWei, 'nonNative', nonNative, 'balances', balances)
+      const tx = await execute(bridgeContractAddress!, method, [selectedNetworkId, selectedToken?.address, amountInWei, nativeFee], {
+          value: totalNative,
           gasLimit: 5000000
         }
       );
+      setAmount('')
       console.log('tx', tx)
       if (tx && tx.hash) {
         setTransactionId(tx.hash)
@@ -96,9 +142,22 @@ export function TokenEditorSection() {
       }
     } catch (e) {
       setErrorMessage((e as Error).message);
+      console.log('e', typeof e)
     } finally {
       setPending(false)
     }
+  }
+
+  if (chainId && !getChain(chainId!)) {
+    return (
+    <div className="w-full max-w-md mx-auto space-y-4">
+      <div className="bg-card/50 dark:bg-card/10 backdrop-blur-sm rounded-xl p-4 shadow-xl border border-border space-y-4">
+        <div className="text-foreground">
+          <p>Connected chain not supported</p>
+        </div>
+      </div>
+    </div>
+    )
   }
 
   return (
@@ -110,6 +169,8 @@ export function TokenEditorSection() {
           <p>Connect your wallet to start swapping</p>
         </div>
         }
+
+        <UnclaimedBalance contractAddress={bridgeContractAddress!} onTransactionSubmitted={handleTransactionSubmitted} />
 
         <NetworkSelector
           selectedNetworkId={selectedNetworkId}
@@ -134,7 +195,11 @@ export function TokenEditorSection() {
             selectedToken={selectedToken}
             disabled={!selectedNetworkId}
           />
-          {selectedToken && <TokenBalance token={selectedToken} userAddress={address!}/>}
+          <TokenBalances
+            tokens={[selectedToken && !selectedToken.isNative ? selectedToken : null, findNativeToken(chainId!, tokens)]}
+            userAddress={address!}
+            onBalanceLoaded={(t, balance) => setBalances({...balances, [t.address]: balance})}
+          />
         </div>
 
        {errorMessage && (

@@ -45,4 +45,16 @@ contract QPTest  {
         runErc(msg.value);
         runNative();
     }
+
+    event TransferResult(uint amount, address to, bool success);
+
+    function testTransfer(uint amount, address payable to) external payable {
+        amount = amount / 2;
+        (bool success,) = to.call{value: amount}(new bytes(0));
+        console.log('TransferResult', success);
+        emit TransferResult(amount, to, success);
+        bool success2 = to.send(amount);
+        console.log('TransferResult', success2);
+        emit TransferResult(amount, to, success2);
+    }
 }

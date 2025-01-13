@@ -8,8 +8,8 @@ async function main() {
   console.log("Deployer:", deployer.address);
 
   const portal = '0xa45baceeb0c6b072b17ef6483e4fb50a49dc5f4b'
-  // const QPTest = '0x17BD7CF9d29Da148B52a3075a8f7916ee950f4Df'
-  const QPTest = '0x63e6275e457d6508ABCe0C4d146EC04bc5f3BA58'
+  const QPTest = '0x282f8C731049b42ECddFB93Ae9b5F85369eE2bcE'
+  // const QPTest = '0x63e6275e457d6508ABCe0C4d146EC04bc5f3BA58'
 
 
   const fac = await hre.ethers.getContractFactory('QPTest')
@@ -18,6 +18,19 @@ async function main() {
   console.log('Test deployed to:', test.target)
 
   const gas = 5880000000000000n
+
+  // console.log('Fund with eth')
+  // const tx1 = await deployer.sendTransaction({to: test.target, value: ethers.parseEther('5'), gasLimit: 1000000})
+  // console.log('Fundig Tx 1:', tx1)
+  // await tx1.wait()
+  // const tx2 = await deployer.sendTransaction({to: test.target, value: gas, gasLimit: 1000000})
+  // console.log('Fundig Tx 2:', tx2)
+  // await tx2.wait()
+
+  console.log('calling testTransfer')
+  const tx3 = await test.testTransfer(ethers.parseEther('5'), '0x2A85434eA60e2daA2AA3ef484723D4003fa124Ee', {gasLimit: 1000000})
+  console.log('Tx:', tx3)
+  await tx3.wait()
 
   // console.log('Calling justDoStuff...')
   // const tx0 = await test.justDoStuff({gasLimit: 1000000, value: gas})
@@ -39,17 +52,17 @@ async function main() {
   // await tx.wait()
   // console.log('Ran runErc')
 
-  console.log('Running runNative...')
-  const nativeTx = await test.runNative({value: gas * 2n, gasLimit: 1000000})
-  console.log('Tx:', nativeTx)
-  await nativeTx.wait()
-  console.log('Ran runNative')
+  // console.log('Running runNative...')
+  // const nativeTx = await test.runNative({value: gas * 2n, gasLimit: 1000000})
+  // console.log('Tx:', nativeTx)
+  // await nativeTx.wait()
+  // console.log('Ran runNative')
 
-  console.log('Running runDoubleNative...')
-  const doubleNativeTx = await test.runDoubleNative({value: gas * 2n, gasLimit: 1000000})
-  console.log('Tx:', doubleNativeTx)
-  await doubleNativeTx.wait()
-  console.log('Ran runDoubleNative')
+  // console.log('Running runDoubleNative...')
+  // const doubleNativeTx = await test.runDoubleNative({value: gas * 2n, gasLimit: 1000000})
+  // console.log('Tx:', doubleNativeTx)
+  // await doubleNativeTx.wait()
+  // console.log('Ran runDoubleNative')
 }
 
 main()

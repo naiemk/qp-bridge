@@ -45,9 +45,9 @@ export function WalletModal({
               <TabsTrigger value="wallet" className="py-2 data-[state=active]:bg-background">
                 Wallet
               </TabsTrigger>
-              <TabsTrigger value="transactions" className="py-2 data-[state=active]:bg-background">
+              {/* <TabsTrigger value="transactions" className="py-2 data-[state=active]:bg-background">
                 Transactions
-              </TabsTrigger>
+              </TabsTrigger> */}
             </TabsList>
 
             <TabsContent value="wallet" className="flex-grow overflow-y-auto p-4 space-y-4">

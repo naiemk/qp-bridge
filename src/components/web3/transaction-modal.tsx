@@ -7,6 +7,7 @@ import { AddressBox } from './address-box'
 import { getChain, Utils } from 'web3-react-ui'
 import Image from 'next/image'
 import { DEFAULT_ICON } from '@/types/token'
+import { Button } from "../ui/button"
 
 interface TransactionModalProps {
   isOpen: boolean
@@ -59,6 +60,14 @@ export function TransactionModal({
                   <ExternalLink className="h-4 w-4" />
                 </a>
               </div>
+
+              <Button
+                onClick={onClose}
+                variant="outline"
+                className="w-full"
+              >
+                Close
+              </Button>
             </TabsContent>
           </Tabs>
         </div>
