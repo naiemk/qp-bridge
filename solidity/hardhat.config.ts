@@ -2,6 +2,7 @@ import { HardhatUserConfig } from "hardhat/config";
 import "@nomicfoundation/hardhat-toolbox";
 import { ethers } from "ethers";
 import "@nomicfoundation/hardhat-verify";
+import "@nomicfoundation/hardhat-ignition-ethers";
 
 require("dotenv").config({path: __dirname + '/localConfig/.env'});
 console.log(__dirname + '/localConfig/.env');
@@ -17,9 +18,14 @@ if (accounts?.mnemonic) {
   let wallet = new ethers.Wallet(accounts[0]);
   console.log('Single test account used:', wallet.address);
 }
-
 const config: HardhatUserConfig = {
-  solidity: "0.8.20",
+  solidity: {
+    compilers: [
+      { version: "0.8.20", settings: { optimizer: { enabled: true, runs: 200 } } },
+      { version: "0.8.22", settings: { optimizer: { enabled: true, runs: 200 } } },
+      { version: "0.8.24", settings: { optimizer: { enabled: true, runs: 200 } } }
+    ]
+  },
   networks: {
     arbitrumOne: {
       chainId: 42161,
@@ -62,7 +68,15 @@ const config: HardhatUserConfig = {
     // Disabled by default
     // Doesn't need an API key
     enabled: true
-  }
+  }, ignition: {
+    strategyConfig: {
+      create2: {
+        // To learn more about salts, see the CreateX documentation
+        // salt: "0x0000000000000000000000000000000000001000000000000000000000000002"
+        salt: "0x46657272756D4E6574776F726B2D71706272696467653A30312E3030302E3030", // FerrumNetwork-mainnet:01.001.002
+      },
+    },
+  },
 };
 
 export default config;

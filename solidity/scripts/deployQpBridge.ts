@@ -1,52 +1,7 @@
 import hre from "hardhat";
 import { ethers } from "hardhat";
 import { QpBridge, } from "../typechain-types";
-
-interface Dependencies {
-  bridge?: string;
-  portal: string;
-  remotePeers: {
-    [chainId: string]: string;
-  }
-  remotePairs: {
-    [chainId: string]: {
-      [token: string]: string;
-    }
-  }
-}
-
-const DEPENDENCIES_ARBITRUM: Dependencies = {
-  bridge: "0x795e880127f7e040389c0c9c07c81c484884e3b1",
-  portal: "0xa45baceeb0c6b072b17ef6483e4fb50a49dc5f4b",
-  remotePeers: {
-    "26100": "0xCB5C2bf299981207928404D42E03044b8ae0CEfe",
-  },
-  remotePairs: {
-    "26100": {
-      "0x9f6abbf0ba6b5bfa27f4deb6597cc6ec20573fda": "0x0000000000000000000000000000000000000001",
-    },
-  }
-}
-
-const DEPENDENCIES_FERRUM: Dependencies = {
-  bridge: "0xCB5C2bf299981207928404D42E03044b8ae0CEfe",
-  portal: "0xa45baceeb0c6b072b17ef6483e4fb50a49dc5f4b",
-  remotePeers: {
-    "42161": "0x795e880127f7e040389c0c9c07c81c484884e3b1",
-  },
-  remotePairs: {
-    "42161": {
-      "0x0000000000000000000000000000000000000001": "0x9f6abbf0ba6b5bfa27f4deb6597cc6ec20573fda",
-    },
-  }
-}
-
-const CONFIG: { [chainId: string]: Dependencies } = {
-  "42161": DEPENDENCIES_ARBITRUM,
-  "26100": DEPENDENCIES_FERRUM,
-}
-
-const panick = (msg: string) => { throw new Error(msg) }
+import { CONFIG, panick } from "./bridge.config";
 
 async function main() {
   // deploy qp bridge
