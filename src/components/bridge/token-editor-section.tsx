@@ -21,6 +21,9 @@ interface AppConfig {
   'bridgeContracts': {
     [chainId: string]: string
   }
+  'qpFees': {
+    [chainId: string]: string
+  }
 }
 
 export function TokenEditorSection() {
@@ -74,8 +77,12 @@ export function TokenEditorSection() {
 
   useEffect(() => {
     if (chainId) {
-      const nativeGas = chainId == '26100' ? BigInt(50000000000000000) : BigInt(100000000000000); // Hardcoded native gas for now
-      setNativeFee(nativeGas)
+      let netiveGas = BigInt(appConfig?.qpFees?.[chainId] || (
+          chainId == '26100' ?
+          '5000000000000000000' :
+          '100000000000000'
+      ))
+      setNativeFee(netiveGas)
     }
   }, [chainId])
 
