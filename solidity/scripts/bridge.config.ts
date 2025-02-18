@@ -14,7 +14,7 @@ export interface Dependencies {
 
 export const DEPENDENCIES_ARBITRUM: Dependencies = {
   bridge: "0x7d1993493fe25026B1C9C7Aa22772612c070B500",
-  portal: "0xa45baceeb0c6b072b17ef6483e4fb50a49dc5f4b",
+  portal: "0x9C5DD986E7dD35b9b9D47B7626BB9324777BbcA7",
   remotePeers: {
     "26100": "0x7d1993493fe25026B1C9C7Aa22772612c070B500",
   },
@@ -27,7 +27,7 @@ export const DEPENDENCIES_ARBITRUM: Dependencies = {
 
 export const DEPENDENCIES_FERRUM: Dependencies = {
   bridge: "0x7d1993493fe25026B1C9C7Aa22772612c070B500",
-  portal: "0xa45baceeb0c6b072b17ef6483e4fb50a49dc5f4b",
+  portal: "0x9C5DD986E7dD35b9b9D47B7626BB9324777BbcA7",
   remotePeers: {
     "42161": "0x7d1993493fe25026B1C9C7Aa22772612c070B500",
   },

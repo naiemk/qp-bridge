@@ -2,5 +2,5 @@
   "DeployModule#bridge_impl_01": "0x7b3B0A3cCd940c27C12c1487054348EB531847ea",
   "DeployModule#bridge_proxy_01": "0x7d1993493fe25026B1C9C7Aa22772612c070B500",
   "DeployModule#bridge_01": "0x7d1993493fe25026B1C9C7Aa22772612c070B500",
-  "UpdatePeers#bridge_at_01": "0x7d1993493fe25026B1C9C7Aa22772612c070B500"
+  "UpdatePortal#bridge": "0x7d1993493fe25026B1C9C7Aa22772612c070B500"
 }

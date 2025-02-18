@@ -37,7 +37,7 @@ const config: HardhatUserConfig = {
       url: "https://qpn.svcs.ferrumnetwork.io/",
       accounts,
       allowUnlimitedContractSize: true,
-      gas: 1000000, // this override is required for Substrate based evm chains
+      //gas: 1000000, // this override is required for Substrate based evm chains
     },
   },
   
@@ -68,7 +68,9 @@ const config: HardhatUserConfig = {
     // Disabled by default
     // Doesn't need an API key
     enabled: true
-  }, ignition: {
+  },
+  ignition: {
+    requiredConfirmations: 1,
     strategyConfig: {
       create2: {
         // To learn more about salts, see the CreateX documentation

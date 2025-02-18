@@ -1,6 +1,6 @@
 import hre from "hardhat";
 import { ethers } from "hardhat";
-import { QpBridge, } from "../typechain-types";
+import { QpBridgeUpgradeable, } from "../typechain-types";
 import { CONFIG, panick } from "./bridge.config";
 
 async function main() {
@@ -16,7 +16,7 @@ async function main() {
   const config = CONFIG[currentChainId] || panick(`No config for chain id ${currentChainId}`);
   
   const factory = await ethers.getContractFactory("QpBridge");
-  const qpBridge = config.bridge ? factory.attach(config.bridge) as QpBridge : await factory.deploy(owner) as QpBridge;
+  const qpBridge = config.bridge ? factory.attach(config.bridge) as QpBridgeUpgradeable : await factory.deploy(owner) as QpBridgeUpgradeable;
   console.log("QpBridge is at:", qpBridge.target);
 
   console.log('Calling swap...')
